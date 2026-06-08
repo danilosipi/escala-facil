@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Navbar, PageContainer, Card } from "@/components/ui";
 import { ensureStoreConfig } from "@/services/store.service";
 import { saveStoreConfigAction } from "@/actions/store.actions";
