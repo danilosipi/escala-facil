@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 WORKDIR /app
 
@@ -6,6 +6,9 @@ RUN apk add --no-cache python3 make g++
 
 FROM base AS deps
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
+ENV DATABASE_URL="file:./prisma/dev.db"
 RUN npm ci
 
 FROM base AS builder
@@ -21,7 +24,6 @@ RUN npm run build
 FROM base AS runner
 
 ENV NODE_ENV=production
-ENV DATABASE_URL="file:./prisma/dev.db"
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
@@ -38,7 +40,7 @@ COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-RUN mkdir -p prisma && chown -R nextjs:nodejs prisma .next
+RUN mkdir -p /app/prisma/data && chown -R nextjs:nodejs /app
 
 USER nextjs
 
