@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Navbar, PageContainer, Card, Badge } from "@/components/ui";
 import { listEmployees } from "@/services/employee.service";
 import { EmployeeForm } from "@/components/funcionarios/EmployeeForm";
