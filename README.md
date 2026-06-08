@@ -1,36 +1,167 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Escala Fácil
 
-## Getting Started
+Sistema web para geração e visualização de escala de funcionários, com regras de jornada **5x2**, cobertura mínima por turno e preferências de folga.
 
-First, run the development server:
+## Funcionalidades
+
+- Cadastro de **funcionários** (preferências de folga, indisponibilidades, restrição de fim de semana)
+- Cadastro de **turnos** (Manhã, Tarde, etc.)
+- **Configuração da loja** (dias operacionais, mínimo por turno, ciclo de escala)
+- **Diagnóstico de capacidade** — indica se a equipe consegue cobrir os turnos mínimos
+- **Geração mensal de escala** com validação de conflitos e avisos explicativos
+- Visualização em tabela e calendário
+
+## Stack
+
+- [Next.js 16](https://nextjs.org) (App Router)
+- React 19
+- Prisma + SQLite (`better-sqlite3`)
+- TypeScript + Tailwind CSS
+
+## Pré-requisitos
+
+- Node.js 20+
+- npm
+
+## Instalação
+
+```bash
+npm install
+```
+
+Configure a variável de ambiente (opcional — o padrão já funciona em desenvolvimento):
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+```
+
+Prepare o banco de dados:
+
+```bash
+npm run db:migrate
+npm run db:seed   # opcional: dados de exemplo
+```
+
+## Executando
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação sobe em [http://localhost:3010](http://localhost:3010).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Outros comandos úteis:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build      # build de produção
+npm run start      # servidor de produção
+npm run test       # testes do algoritmo de escala
+npm run lint       # ESLint
+npm run db:reset   # recria o banco (apaga dados)
+```
 
-## Learn More
+## Fluxo recomendado no app
 
-To learn more about Next.js, take a look at the following resources:
+1. [Funcionários](/funcionarios) — cadastrar equipe e preferências
+2. [Turnos](/turnos) — definir horários
+3. [Configurações](/configuracoes) — validar regras e capacidade da loja
+4. [Escala](/escala) — gerar e revisar o mês
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Algoritmo de geração de escala
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A lógica principal fica em `src/domain/`. O fluxo ao gerar uma escala mensal é:
 
-## Deploy on Vercel
+### 1. Geração inicial
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Monta planos de trabalho/folga por ciclo respeitando:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- regra **5x2** (5 dias trabalhados, 2 folgas por ciclo de 7 dias)
+- **cobertura diária** mínima
+- **mínimo de funcionários por turno**
+- **indisponibilidades** obrigatórias
+- restrição de **fim de semana** (`canWorkWeekend`)
+- dias preferenciais de folga, quando a capacidade permitir
+
+Em seguida, distribui turnos e repara cobertura dentro de cada ciclo.
+
+### 2. Otimização de preferências (remanejamento)
+
+Etapa pós-geração (`preferred-off-optimizer.ts`). Para cada preferência de folga ainda não atendida, o sistema tenta **trocar dias de trabalho/folga** entre dois funcionários no **mesmo ciclo**:
+
+- o funcionário que queria folgar deixa de trabalhar naquele dia
+- outro funcionário que estava de folga cobre o dia
+- o primeiro compensa assumindo um dia de trabalho do cobridor
+
+A troca só é aplicada se **todos** continuarem válidos:
+
+| Regra | Exigência |
+| --- | --- |
+| Jornada | exatamente 5 dias trabalhados e 2 folgas no ciclo |
+| Cobertura | nenhum dia ou turno descoberto |
+| Indisponibilidade | ninguém escalado em dia bloqueado |
+| Fim de semana | respeita `canWorkWeekend` |
+| Turnos | ninguém com dois turnos no mesmo dia |
+
+Se nenhuma troca viável existir, registra aviso:
+
+> *Preferência não atendida por impossibilidade de remanejamento sem violar cobertura ou 5x2.*
+
+### 3. Validação final
+
+Confere integridade da escala (5x2, cobertura, indisponibilidades, etc.) e consolida conflitos/avisos exibidos na UI.
+
+## Debug do algoritmo
+
+Logs detalhados do remanejamento vão para o **console do servidor** (não aparecem na interface):
+
+```bash
+# Windows (PowerShell)
+$env:SCHEDULE_DEBUG="1"; npm run dev
+
+# Linux / macOS
+SCHEDULE_DEBUG=1 npm run dev
+```
+
+Com a flag ativa, o prefixo `[preferencia-remanejamento]` registra:
+
+- preferência analisada
+- candidatos à troca
+- motivo de rejeição de cada candidato
+- troca aplicada ou motivo final da não aplicação
+
+## Testes
+
+Os testes cobrem preferências de folga, remanejamento e restrições de fim de semana:
+
+```bash
+npm test
+```
+
+Arquivos principais:
+
+- `src/domain/preferred-off.test.ts`
+- `src/domain/schedule-weekend.test.ts`
+
+## Estrutura do projeto
+
+```
+src/
+  app/              # páginas (Next.js App Router)
+  components/       # UI e formulários
+  domain/           # algoritmo de escala, validações e testes
+  services/         # acesso a dados (Prisma)
+  actions/          # server actions
+prisma/             # schema, migrations e seed
+```
+
+## Docker (opcional)
+
+```bash
+docker compose up --build
+```
+
+O container expõe a porta **3000** e persiste o SQLite em volume.
+
+## Licença
+
+Projeto privado.
