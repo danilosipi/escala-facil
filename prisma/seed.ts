@@ -1,7 +1,9 @@
 import "dotenv/config";
-import { createPrismaClient } from "../src/lib/prisma";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaClient } from "../src/generated/prisma/client";
 
-const prisma = createPrismaClient();
+const url = process.env.DATABASE_URL ?? "file:./prisma/dev.db";
+const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
 
 const EMPLOYEES = [
   { name: "Ana Silva", cycleOffset: 0, preferredOffDays: [0, 6], canWorkWeekend: true },
