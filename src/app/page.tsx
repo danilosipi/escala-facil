@@ -1,65 +1,118 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Navbar, PageContainer, Card, Alert } from "@/components/ui";
+import { ensureStoreConfig } from "@/services/store.service";
+import { listEmployees } from "@/services/employee.service";
+import { listShifts } from "@/services/shift.service";
+import { listSchedules } from "@/services/schedule.service";
+import { buildScheduleCapacityFromConfig } from "@/domain/schedule-capacity";
 
-export default function Home() {
+export default async function HomePage() {
+  const config = await ensureStoreConfig();
+  const employees = await listEmployees();
+  const shifts = await listShifts();
+  const schedules = await listSchedules();
+
+  const activeEmployees = employees.filter((e) => e.active).length;
+  const activeShifts = shifts.filter((s) => s.active).length;
+  const diagnosis = buildScheduleCapacityFromConfig(
+    config,
+    employees.filter((e) => e.active),
+    activeShifts
+  );
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <Navbar currentPath="/" />
+      <PageContainer
+        title={`Bem-vindo ao ${config.name}`}
+        description="Sistema de geração e visualização de escala de funcionários"
+      >
+        <Alert variant="info" >
+          Cadastre primeiro os funcionários e turnos. Depois configure a loja para validar se a
+          equipe é suficiente.
+        </Alert>
+
+        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <p className="text-sm text-slate-500">Funcionários ativos</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900">{activeEmployees}</p>
+          </Card>
+          <Card>
+            <p className="text-sm text-slate-500">Turnos ativos</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900">{activeShifts}</p>
+          </Card>
+          <Card>
+            <p className="text-sm text-slate-500">Regra de escala</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900">
+              {config.workDaysPerCycle}x{config.offDaysPerCycle}
+            </p>
+            <p className="text-xs text-slate-500">ciclo de {config.cycleLengthDays} dias</p>
+          </Card>
+          <Card>
+            <p className="text-sm text-slate-500">Escalas geradas</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900">{schedules.length}</p>
+          </Card>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Capacidade da escala</h2>
+            <dl className="mt-3 space-y-2 text-sm text-slate-600">
+              <div className="flex justify-between">
+                <dt>Jornadas disponíveis no ciclo</dt>
+                <dd className="font-medium text-slate-900">{diagnosis.availableCapacity}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>Jornadas necessárias no ciclo</dt>
+                <dd className="font-medium text-slate-900">{diagnosis.minimumRequired}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>{diagnosis.isSufficient ? "Sobra" : "Déficit"}</dt>
+                <dd
+                  className={`font-medium ${diagnosis.isSufficient ? "text-green-700" : "text-amber-700"}`}
+                >
+                  {diagnosis.isSufficient ? diagnosis.surplus : diagnosis.deficit}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-3 text-sm">
+              {diagnosis.isSufficient ? (
+                <span className="text-green-700">Capacidade suficiente para os turnos mínimos.</span>
+              ) : (
+                <span className="text-amber-700">
+                  Capacidade insuficiente — alguns turnos ficarão descobertos.
+                </span>
+              )}
+            </p>
+          </Card>
+
+          <Card>
+            <h2 className="text-lg font-semibold text-slate-900">Fluxo recomendado</h2>
+            <ol className="mt-3 list-inside list-decimal space-y-2 text-sm">
+              <li>
+                <Link href="/funcionarios" className="text-blue-600 hover:underline">
+                  Cadastrar funcionários
+                </Link>
+              </li>
+              <li>
+                <Link href="/turnos" className="text-blue-600 hover:underline">
+                  Configurar turnos
+                </Link>
+              </li>
+              <li>
+                <Link href="/configuracoes" className="text-blue-600 hover:underline">
+                  Validar configurações da loja
+                </Link>
+              </li>
+              <li>
+                <Link href="/escala" className="text-blue-600 hover:underline">
+                  Gerar e visualizar escala
+                </Link>
+              </li>
+            </ol>
+          </Card>
         </div>
-      </main>
-    </div>
+      </PageContainer>
+    </>
   );
 }

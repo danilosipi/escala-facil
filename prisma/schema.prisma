@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model StoreConfig {
+  id                         String   @id @default(cuid())
+  name                       String   @default("Minha Loja")
+  openTime                   String   @default("07:00")
+  closeTime                  String   @default("22:00")
+  operatingDays              String   @default("[0,1,2,3,4,5,6]")
+  dailyWorkHours             Int      @default(8)
+  workDaysPerCycle           Int      @default(5)
+  offDaysPerCycle            Int      @default(2)
+  cycleLengthDays            Int      @default(7)
+  consecutiveOffDaysRequired Boolean  @default(false)
+  minEmployeesPerShift       Int      @default(1)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+model Employee {
+  id               String               @id @default(cuid())
+  name             String
+  active           Boolean              @default(true)
+  notes            String?
+  preferredOffDays String               @default("[]")
+  unavailableDates String               @default("[]")
+  canWorkWeekend   Boolean              @default(true)
+  cycleOffset      Int                  @default(0)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  assignments      ScheduleAssignment[]
+}
+
+model Shift {
+  id          String               @id @default(cuid())
+  name        String
+  startTime   String
+  endTime     String
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  assignments ScheduleAssignment[]
+}
+
+model Schedule {
+  id          String               @id @default(cuid())
+  month       Int
+  year        Int
+  generatedAt DateTime             @default(now())
+  conflicts   String               @default("[]")
+  assignments ScheduleAssignment[]
+
+  @@unique([month, year])
+}
+
+model ScheduleAssignment {
+  id         String  @id @default(cuid())
+  scheduleId String
+  employeeId String
+  shiftId    String?
+  date       String
+  isOff      Boolean @default(false)
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift    Shift?   @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+
+  @@unique([scheduleId, employeeId, date])
+}

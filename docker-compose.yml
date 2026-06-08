@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./prisma/dev.db
+      - NODE_ENV=production
+    volumes:
+      - sqlite_data:/app/prisma
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
