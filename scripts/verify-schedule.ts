@@ -5,6 +5,7 @@ import { generateSchedule } from "../src/domain/schedule-generator";
 import { validateSchedule, countCycleWorkJourneys } from "../src/domain/schedule-validator";
 import { getFixedCycleWindows } from "../src/domain/cycle-patterns";
 import { getDayOfWeek, getMonthDates } from "../src/lib/utils";
+import { DEFAULT_LABOR_RULES } from "../src/domain/labor-rules/config";
 import type { EmployeeData, ShiftData, StoreConfigData } from "../src/domain/types";
 
 const SEED_EMPLOYEES: Omit<EmployeeData, "id" | "active" | "notes">[] = [
@@ -50,6 +51,7 @@ function buildMockShifts(): ShiftData[] {
       startTime: "07:00",
       endTime: "15:00",
       durationMinutes: 480,
+      breakMinutes: 60,
       active: true,
     },
     {
@@ -58,6 +60,7 @@ function buildMockShifts(): ShiftData[] {
       startTime: "14:00",
       endTime: "22:00",
       durationMinutes: 480,
+      breakMinutes: 60,
       active: true,
     },
   ];
@@ -77,6 +80,8 @@ function buildMockConfig(): StoreConfigData {
     consecutiveOffDaysRequired: false,
     minEmployeesPerShift: 1,
     minSundayOffsPerMonth: 2,
+    holidayDates: [],
+    laborRules: DEFAULT_LABOR_RULES,
   };
 }
 
