@@ -1,4 +1,8 @@
+import type { LaborRulesConfig, LaborViolationCode, ValidationSeverity } from "./labor-rules/types";
+
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type { LaborRulesConfig, LaborViolationCode, ValidationSeverity };
 
 export interface StoreConfigData {
   id: string;
@@ -13,11 +17,14 @@ export interface StoreConfigData {
   consecutiveOffDaysRequired: boolean;
   minEmployeesPerShift: number;
   minSundayOffsPerMonth: number;
+  holidayDates: string[];
+  laborRules: LaborRulesConfig;
 }
 
 export interface EmployeeData {
   id: string;
   name: string;
+  role: string | null;
   active: boolean;
   notes: string | null;
   preferredOffDays: number[];
@@ -32,6 +39,7 @@ export interface ShiftData {
   startTime: string;
   endTime: string;
   durationMinutes: number;
+  breakMinutes: number;
   active: boolean;
 }
 
@@ -53,7 +61,8 @@ export type ConflictType =
   | "EMPLOYEE_DOUBLE_SHIFT"
   | "EMPLOYEE_WITHOUT_SCHEDULE"
   | "PREFERRED_OFF_NOT_HONORED"
-  | "INSUFFICIENT_SUNDAY_OFFS";
+  | "INSUFFICIENT_SUNDAY_OFFS"
+  | "LABOR_RULE_VIOLATION";
 
 export interface ScheduleConflict {
   type: ConflictType;
@@ -65,6 +74,11 @@ export interface ScheduleConflict {
   shiftName?: string;
   /** Conflito esperado por falta de capacidade da equipe */
   expected?: boolean;
+  /** Regras trabalhistas */
+  code?: LaborViolationCode;
+  severity?: ValidationSeverity;
+  expectedValue?: string | number;
+  actualValue?: string | number;
 }
 
 export interface GeneratedSchedule {

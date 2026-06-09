@@ -24,12 +24,12 @@ export default async function HomePage() {
     <>
       <Navbar currentPath="/" />
       <PageContainer
-        title={`Bem-vindo ao ${config.name}`}
-        description="Sistema de geração e visualização de escala de funcionários"
+        title={config.name}
+        description="Monte a escala da sua loja sem planilha e sem erro trabalhista."
       >
-        <Alert variant="info" >
-          Cadastre primeiro os funcionários e turnos. Depois configure a loja para validar se a
-          equipe é suficiente.
+        <Alert variant="info">
+          Comece cadastrando funcionários e turnos. Depois configure a loja e gere a escala com
+          alertas trabalhistas.
         </Alert>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -87,26 +87,29 @@ export default async function HomePage() {
           </Card>
 
           <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Fluxo recomendado</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Como montar a escala</h2>
             <ol className="mt-3 list-inside list-decimal space-y-2 text-sm">
+              <li>
+                <Link href="/configuracoes" className="text-blue-600 hover:underline">
+                  Cadastrar a loja
+                </Link>{" "}
+                — horários, feriados e modelo 5x2 ou 6x1
+              </li>
               <li>
                 <Link href="/funcionarios" className="text-blue-600 hover:underline">
                   Cadastrar funcionários
-                </Link>
+                </Link>{" "}
+                — equipe, folgas preferidas e domingos
               </li>
               <li>
                 <Link href="/turnos" className="text-blue-600 hover:underline">
-                  Configurar turnos
-                </Link>
-              </li>
-              <li>
-                <Link href="/configuracoes" className="text-blue-600 hover:underline">
-                  Validar configurações da loja
-                </Link>
+                  Definir turnos
+                </Link>{" "}
+                — horários e intervalos
               </li>
               <li>
                 <Link href="/escala" className="text-blue-600 hover:underline">
-                  Gerar e visualizar escala
+                  Montar, validar e exportar a escala
                 </Link>
               </li>
             </ol>

@@ -4,6 +4,7 @@ import { generateSchedule } from "./schedule-generator";
 import { getOperatingSundays, countSundayOffsForEmployee } from "./sunday-off-validator";
 import { detectInsufficientSundayOffConflicts } from "./sunday-off-validator";
 import { getDayOfWeek, getMonthDates } from "@/lib/utils";
+import { DEFAULT_LABOR_RULES } from "./labor-rules/config";
 import type { EmployeeData, ShiftData, StoreConfigData } from "./types";
 
 const CONFIG: StoreConfigData = {
@@ -19,6 +20,8 @@ const CONFIG: StoreConfigData = {
   consecutiveOffDaysRequired: false,
   minEmployeesPerShift: 1,
   minSundayOffsPerMonth: 2,
+  holidayDates: [],
+  laborRules: DEFAULT_LABOR_RULES,
 };
 
 const SHIFTS: ShiftData[] = [
@@ -28,6 +31,7 @@ const SHIFTS: ShiftData[] = [
     startTime: "07:00",
     endTime: "15:00",
     durationMinutes: 480,
+    breakMinutes: 60,
     active: true,
   },
   {
@@ -36,6 +40,7 @@ const SHIFTS: ShiftData[] = [
     startTime: "14:00",
     endTime: "22:00",
     durationMinutes: 480,
+    breakMinutes: 60,
     active: true,
   },
 ];
@@ -44,6 +49,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-1",
     name: "Ana",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [0, 6],
@@ -54,6 +60,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-2",
     name: "Bruno",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [1, 3],
@@ -64,6 +71,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-3",
     name: "Carla",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [2, 5],
@@ -74,6 +82,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-4",
     name: "Diego",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [0, 4],
@@ -128,6 +137,7 @@ describe("regra de domingos de folga por mês", () => {
     const employees: EmployeeData[] = [0, 1, 2, 3].map((index) => ({
       id: `emp-${index}`,
       name: `Funcionário ${index + 1}`,
+      role: null,
       active: true,
       notes: null,
       preferredOffDays: [],

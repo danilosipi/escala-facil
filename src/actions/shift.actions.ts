@@ -12,6 +12,7 @@ export async function createShiftAction(formData: FormData) {
     name: String(formData.get("name")),
     startTime: String(formData.get("startTime")),
     endTime: String(formData.get("endTime")),
+    breakMinutes: Number(formData.get("breakMinutes") ?? 60),
     active: formData.get("active") === "on",
   });
 
@@ -24,6 +25,7 @@ export async function updateShiftAction(id: string, formData: FormData) {
     name: String(formData.get("name")),
     startTime: String(formData.get("startTime")),
     endTime: String(formData.get("endTime")),
+    breakMinutes: Number(formData.get("breakMinutes") ?? 60),
     active: formData.get("active") === "on",
   });
 

@@ -4,6 +4,7 @@ import { generateSchedule } from "./schedule-generator";
 import { getFixedCycleWindows } from "./cycle-patterns";
 import { getDayOfWeek, getMonthDates } from "@/lib/utils";
 import { optimizePreferredOffPlans } from "./preferred-off-optimizer";
+import { DEFAULT_LABOR_RULES } from "./labor-rules/config";
 import type { EmployeeData, ShiftData, StoreConfigData } from "./types";
 
 const CONFIG: StoreConfigData = {
@@ -19,6 +20,8 @@ const CONFIG: StoreConfigData = {
   consecutiveOffDaysRequired: false,
   minEmployeesPerShift: 1,
   minSundayOffsPerMonth: 2,
+  holidayDates: [],
+  laborRules: DEFAULT_LABOR_RULES,
 };
 
 const SHIFTS: ShiftData[] = [
@@ -28,6 +31,7 @@ const SHIFTS: ShiftData[] = [
     startTime: "07:00",
     endTime: "15:00",
     durationMinutes: 480,
+    breakMinutes: 60,
     active: true,
   },
   {
@@ -36,6 +40,7 @@ const SHIFTS: ShiftData[] = [
     startTime: "14:00",
     endTime: "22:00",
     durationMinutes: 480,
+    breakMinutes: 60,
     active: true,
   },
 ];
@@ -48,6 +53,7 @@ function buildEmployee(
   return {
     id,
     name,
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [],

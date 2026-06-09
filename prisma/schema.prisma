@@ -20,6 +20,8 @@ model StoreConfig {
   consecutiveOffDaysRequired Boolean  @default(false)
   minEmployeesPerShift       Int      @default(1)
   minSundayOffsPerMonth      Int      @default(2)
+  holidayDates               String   @default("[]")
+  laborRulesConfig           String   @default("{}")
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
 }
@@ -27,6 +29,7 @@ model StoreConfig {
 model Employee {
   id               String               @id @default(cuid())
   name             String
+  role             String?
   active           Boolean              @default(true)
   notes            String?
   preferredOffDays String               @default("[]")
@@ -39,11 +42,12 @@ model Employee {
 }
 
 model Shift {
-  id          String               @id @default(cuid())
-  name        String
-  startTime   String
-  endTime     String
-  active      Boolean              @default(true)
+  id           String               @id @default(cuid())
+  name         String
+  startTime    String
+  endTime      String
+  breakMinutes Int                  @default(60)
+  active       Boolean              @default(true)
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   assignments ScheduleAssignment[]

@@ -14,6 +14,7 @@ export async function getEmployee(id: string): Promise<EmployeeData | null> {
 
 export async function createEmployee(data: {
   name: string;
+  role?: string | null;
   active?: boolean;
   notes?: string | null;
   preferredOffDays?: number[];
@@ -24,6 +25,7 @@ export async function createEmployee(data: {
   const employee = await prisma.employee.create({
     data: {
       name: data.name,
+      role: data.role ?? null,
       active: data.active ?? true,
       notes: data.notes ?? null,
       preferredOffDays: JSON.stringify(data.preferredOffDays ?? []),
@@ -39,6 +41,7 @@ export async function updateEmployee(
   id: string,
   data: Partial<{
     name: string;
+    role: string | null;
     active: boolean;
     notes: string | null;
     preferredOffDays: number[];
@@ -51,6 +54,7 @@ export async function updateEmployee(
     where: { id },
     data: {
       ...(data.name !== undefined && { name: data.name }),
+      ...(data.role !== undefined && { role: data.role }),
       ...(data.active !== undefined && { active: data.active }),
       ...(data.notes !== undefined && { notes: data.notes }),
       ...(data.preferredOffDays !== undefined && {

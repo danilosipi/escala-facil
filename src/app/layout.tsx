@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Escala Fácil",
-  description: "Sistema de escala de funcionários para lojas",
+  title: "Escala Fácil — escala para pequeno varejo",
+  description:
+    "Monte a escala da sua loja sem planilha e sem erro trabalhista. Alertas para jornada, folgas, domingos e feriados.",
 };
 
 export default function RootLayout({

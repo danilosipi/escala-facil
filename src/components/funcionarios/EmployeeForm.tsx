@@ -22,12 +22,22 @@ export function EmployeeForm({ employee, action, submitLabel = "Cadastrar" }: Pr
       </div>
 
       <div>
+        <Label htmlFor="role">Cargo / função</Label>
+        <Input
+          id="role"
+          name="role"
+          defaultValue={employee?.role ?? ""}
+          placeholder="Ex.: Caixa, Estoquista, Gerente"
+        />
+      </div>
+
+      <div>
         <Label htmlFor="notes">Observação</Label>
         <Input id="notes" name="notes" defaultValue={employee?.notes ?? ""} />
       </div>
 
       <div>
-        <Label htmlFor="cycleOffset">Offset do ciclo</Label>
+        <Label htmlFor="cycleOffset">Deslocamento do ciclo de folgas</Label>
         <Input
           id="cycleOffset"
           name="cycleOffset"

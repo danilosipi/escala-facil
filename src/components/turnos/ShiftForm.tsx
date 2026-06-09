@@ -42,6 +42,22 @@ export function ShiftForm({ shift, action, submitLabel = "Cadastrar" }: Props) {
         />
       </div>
 
+      <div>
+        <Label htmlFor="breakMinutes">Intervalo (minutos)</Label>
+        <Input
+          id="breakMinutes"
+          name="breakMinutes"
+          type="number"
+          min={0}
+          max={180}
+          defaultValue={shift?.breakMinutes ?? 60}
+          required
+        />
+        <p className="mt-1 text-xs text-slate-500">
+          Jornadas acima de 4h exigem intervalo mínimo (15 min até 6h, 1h acima de 6h).
+        </p>
+      </div>
+
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"

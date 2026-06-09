@@ -4,6 +4,7 @@ import { generateSchedule } from "./schedule-generator";
 import { buildScheduleCapacityDiagnosis } from "./schedule-capacity";
 import { getFixedCycleWindows } from "./cycle-patterns";
 import { getDayOfWeek, getMonthDates } from "@/lib/utils";
+import { DEFAULT_LABOR_RULES } from "./labor-rules/config";
 import type { EmployeeData, ShiftData, StoreConfigData } from "./types";
 
 const CONFIG: StoreConfigData = {
@@ -19,6 +20,8 @@ const CONFIG: StoreConfigData = {
   consecutiveOffDaysRequired: false,
   minEmployeesPerShift: 1,
   minSundayOffsPerMonth: 2,
+  holidayDates: [],
+  laborRules: DEFAULT_LABOR_RULES,
 };
 
 const SHIFTS: ShiftData[] = [
@@ -28,6 +31,7 @@ const SHIFTS: ShiftData[] = [
     startTime: "07:00",
     endTime: "15:00",
     durationMinutes: 480,
+    breakMinutes: 60,
     active: true,
   },
   {
@@ -36,6 +40,7 @@ const SHIFTS: ShiftData[] = [
     startTime: "14:00",
     endTime: "22:00",
     durationMinutes: 480,
+    breakMinutes: 60,
     active: true,
   },
 ];
@@ -44,6 +49,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-cristina",
     name: "Cristina",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [0, 6],
@@ -54,6 +60,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-danilo",
     name: "Danilo",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [1, 3],
@@ -64,6 +71,7 @@ const EMPLOYEES: EmployeeData[] = [
   {
     id: "emp-renata",
     name: "Renata",
+    role: null,
     active: true,
     notes: null,
     preferredOffDays: [2, 4],

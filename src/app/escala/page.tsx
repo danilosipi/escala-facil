@@ -6,9 +6,11 @@ import { ensureStoreConfig } from "@/services/store.service";
 import { generateScheduleAction } from "@/actions/schedule.actions";
 import { buildScheduleCapacityFromConfig } from "@/domain/schedule-capacity";
 import { ConflictsList } from "@/components/escala/ConflictsList";
+import { ExportScheduleButton } from "@/components/escala/ExportScheduleButton";
 import { GenerateScheduleForm } from "@/components/escala/GenerateScheduleForm";
 import { ScheduleCalendar } from "@/components/escala/ScheduleCalendar";
 import { ScheduleTable } from "@/components/escala/ScheduleTable";
+import { ComplianceDisclaimer } from "@/components/ui/ComplianceDisclaimer";
 
 interface PageProps {
   searchParams: Promise<{ month?: string; year?: string }>;
@@ -45,8 +47,8 @@ export default async function EscalaPage({ searchParams }: PageProps) {
     <>
       <Navbar currentPath="/escala" />
       <PageContainer
-        title="Escala mensal"
-        description="Gere, visualize e valide a escala de funcionários"
+        title="Escala da loja"
+        description="Monte a escala semanal ou mensal, revise os alertas trabalhistas e exporte para compartilhar"
       >
         <Card className="mb-8">
           <GenerateScheduleForm
@@ -86,12 +88,23 @@ export default async function EscalaPage({ searchParams }: PageProps) {
         ) : (
           <div className="space-y-8">
             <Card>
-              <h2 className="mb-4 text-lg font-semibold text-slate-900">
-                Conflitos — {MONTH_NAMES[month - 1]} {year}
-              </h2>
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Alertas — {MONTH_NAMES[month - 1]} {year}
+                </h2>
+                <ExportScheduleButton
+                  month={month}
+                  year={year}
+                  storeName={config.name}
+                  employees={employees}
+                  shifts={shifts}
+                  assignments={schedule.assignments}
+                />
+              </div>
               <ConflictsList conflicts={schedule.conflicts} diagnosis={diagnosis} />
-              <p className="mt-4 text-xs text-slate-500">
-                Gerada em {schedule.generatedAt.toLocaleString("pt-BR")}
+              <ComplianceDisclaimer className="mt-4" />
+              <p className="mt-2 text-xs text-slate-500">
+                Escala gerada em {schedule.generatedAt.toLocaleString("pt-BR")}
               </p>
             </Card>
 

@@ -22,6 +22,7 @@ export async function createEmployeeAction(formData: FormData) {
 
   await createEmployee({
     name: String(formData.get("name")),
+    role: String(formData.get("role") ?? "") || null,
     active: formData.get("active") === "on",
     notes: String(formData.get("notes") ?? "") || null,
     preferredOffDays,
@@ -44,6 +45,7 @@ export async function updateEmployeeAction(id: string, formData: FormData) {
 
   await updateEmployee(id, {
     name: String(formData.get("name")),
+    role: String(formData.get("role") ?? "") || null,
     active: formData.get("active") === "on",
     notes: String(formData.get("notes") ?? "") || null,
     preferredOffDays,

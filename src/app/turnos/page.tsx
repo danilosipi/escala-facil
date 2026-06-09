@@ -10,7 +10,10 @@ export default async function TurnosPage() {
   return (
     <>
       <Navbar currentPath="/turnos" />
-      <PageContainer title="Turnos" description="Configure os turnos de trabalho da loja">
+      <PageContainer
+        title="Turnos"
+        description="Defina os horários de trabalho e intervalos — a validação usa esses dados para alertas de jornada"
+      >
         <div className="grid gap-8 lg:grid-cols-3">
           <Card className="lg:col-span-1">
             <h2 className="mb-4 text-lg font-semibold">Novo turno</h2>

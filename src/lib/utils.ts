@@ -52,6 +52,12 @@ export function getMonthDates(year: number, month: number): string[] {
   return Array.from({ length: days }, (_, i) => formatDateISO(year, month, i + 1));
 }
 
+export function addDaysISO(date: string, days: number): string {
+  const parsed = parseDateISO(date);
+  parsed.setDate(parsed.getDate() + days);
+  return formatDateISO(parsed.getFullYear(), parsed.getMonth() + 1, parsed.getDate());
+}
+
 export const DAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
 
 export const DAY_NAMES_FULL = [

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { mapStoreConfig } from "@/lib/mappers";
+import { DEFAULT_LABOR_RULES } from "@/domain/labor-rules/config";
 import type { StoreConfigData } from "@/domain/types";
 
 export async function getStoreConfig(): Promise<StoreConfigData | null> {
@@ -24,6 +25,8 @@ export async function upsertStoreConfig(
     consecutiveOffDaysRequired: data.consecutiveOffDaysRequired,
     minEmployeesPerShift: data.minEmployeesPerShift,
     minSundayOffsPerMonth: data.minSundayOffsPerMonth,
+    holidayDates: JSON.stringify(data.holidayDates),
+    laborRulesConfig: JSON.stringify(data.laborRules),
   };
 
   const config = existing
@@ -48,5 +51,7 @@ export async function ensureStoreConfig(): Promise<StoreConfigData> {
     consecutiveOffDaysRequired: false,
     minEmployeesPerShift: 1,
     minSundayOffsPerMonth: 2,
+    holidayDates: [],
+    laborRules: DEFAULT_LABOR_RULES,
   });
 }

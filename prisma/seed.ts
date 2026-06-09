@@ -41,8 +41,8 @@ async function main() {
 
   await prisma.shift.createMany({
     data: [
-      { name: "Manhã", startTime: "07:00", endTime: "15:00", active: true },
-      { name: "Tarde", startTime: "14:00", endTime: "22:00", active: true },
+      { name: "Manhã", startTime: "07:00", endTime: "15:00", breakMinutes: 60, active: true },
+      { name: "Tarde", startTime: "14:00", endTime: "22:00", breakMinutes: 60, active: true },
     ],
   });
 

@@ -8,14 +8,14 @@ import { getDayOfWeek, getMonthDates } from "../src/lib/utils";
 import type { EmployeeData, ShiftData, StoreConfigData } from "../src/domain/types";
 
 const SEED_EMPLOYEES: Omit<EmployeeData, "id" | "active" | "notes">[] = [
-  { name: "Ana Silva", cycleOffset: 0, preferredOffDays: [0, 6], unavailableDates: [], canWorkWeekend: true },
-  { name: "Bruno Costa", cycleOffset: 1, preferredOffDays: [1, 3], unavailableDates: [], canWorkWeekend: true },
-  { name: "Carla Mendes", cycleOffset: 2, preferredOffDays: [2, 5], unavailableDates: [], canWorkWeekend: false },
-  { name: "Diego Alves", cycleOffset: 3, preferredOffDays: [0, 4], unavailableDates: [], canWorkWeekend: true },
-  { name: "Elena Rocha", cycleOffset: 4, preferredOffDays: [3, 6], unavailableDates: [], canWorkWeekend: true },
-  { name: "Felipe Nunes", cycleOffset: 5, preferredOffDays: [1, 5], unavailableDates: [], canWorkWeekend: false },
-  { name: "Gabriela Lima", cycleOffset: 6, preferredOffDays: [2, 4], unavailableDates: [], canWorkWeekend: true },
-  { name: "Henrique Souza", cycleOffset: 7, preferredOffDays: [0, 3], unavailableDates: [], canWorkWeekend: true },
+  { name: "Ana Silva", role: null, cycleOffset: 0, preferredOffDays: [0, 6], unavailableDates: [], canWorkWeekend: true },
+  { name: "Bruno Costa", role: null, cycleOffset: 1, preferredOffDays: [1, 3], unavailableDates: [], canWorkWeekend: true },
+  { name: "Carla Mendes", role: null, cycleOffset: 2, preferredOffDays: [2, 5], unavailableDates: [], canWorkWeekend: false },
+  { name: "Diego Alves", role: null, cycleOffset: 3, preferredOffDays: [0, 4], unavailableDates: [], canWorkWeekend: true },
+  { name: "Elena Rocha", role: null, cycleOffset: 4, preferredOffDays: [3, 6], unavailableDates: [], canWorkWeekend: true },
+  { name: "Felipe Nunes", role: null, cycleOffset: 5, preferredOffDays: [1, 5], unavailableDates: [], canWorkWeekend: false },
+  { name: "Gabriela Lima", role: null, cycleOffset: 6, preferredOffDays: [2, 4], unavailableDates: [], canWorkWeekend: true },
+  { name: "Henrique Souza", role: null, cycleOffset: 7, preferredOffDays: [0, 3], unavailableDates: [], canWorkWeekend: true },
 ];
 
 const PROBLEM_DATES = [

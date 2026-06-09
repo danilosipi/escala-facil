@@ -12,13 +12,7 @@ import type {
   StoreConfigData,
 } from "./types";
 import { getDayOfWeek, getMonthDates } from "@/lib/utils";
-import { validateSchedule } from "./schedule-validator";
-import {
-  buildScheduleCapacityFromConfig,
-  markExpectedCapacityConflicts,
-} from "./schedule-capacity";
-import { detectUnmetPreferredOffConflicts } from "./preferred-off-validator";
-import { detectInsufficientSundayOffConflicts } from "./sunday-off-validator";
+import { collectScheduleConflicts } from "./collect-schedule-conflicts";
 import { optimizePreferredOffPlans } from "./preferred-off-optimizer";
 import { optimizeSundayOffPlans } from "./sunday-off-optimizer";
 
@@ -486,7 +480,7 @@ export function generateSchedule(
     config
   );
 
-  const conflicts = validateSchedule({
+  const conflicts = collectScheduleConflicts({
     config,
     employees: activeEmployees,
     shifts: activeShifts,
@@ -494,32 +488,6 @@ export function generateSchedule(
     month,
     year,
   });
-
-  conflicts.push(
-    ...detectUnmetPreferredOffConflicts(
-      activeEmployees,
-      assignments,
-      operatingDates,
-      config,
-      activeShifts.length
-    )
-  );
-
-  conflicts.push(
-    ...detectInsufficientSundayOffConflicts(
-      activeEmployees,
-      assignments,
-      operatingDates,
-      config
-    )
-  );
-
-  const capacity = buildScheduleCapacityFromConfig(
-    config,
-    activeEmployees,
-    activeShifts.length
-  );
-  markExpectedCapacityConflicts(conflicts, capacity);
 
   return { assignments, conflicts };
 }

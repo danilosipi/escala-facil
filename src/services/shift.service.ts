@@ -16,6 +16,7 @@ export async function createShift(data: {
   name: string;
   startTime: string;
   endTime: string;
+  breakMinutes?: number;
   active?: boolean;
 }): Promise<ShiftData> {
   const shift = await prisma.shift.create({
@@ -23,6 +24,7 @@ export async function createShift(data: {
       name: data.name,
       startTime: data.startTime,
       endTime: data.endTime,
+      breakMinutes: data.breakMinutes ?? 60,
       active: data.active ?? true,
     },
   });
@@ -31,7 +33,13 @@ export async function createShift(data: {
 
 export async function updateShift(
   id: string,
-  data: Partial<{ name: string; startTime: string; endTime: string; active: boolean }>
+  data: Partial<{
+    name: string;
+    startTime: string;
+    endTime: string;
+    breakMinutes: number;
+    active: boolean;
+  }>
 ): Promise<ShiftData> {
   const shift = await prisma.shift.update({ where: { id }, data });
   return mapShift(shift);

@@ -1,17 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { generateSchedule } from "@/domain/schedule-generator";
-import { validateSchedule } from "@/domain/schedule-validator";
-import {
-  buildScheduleCapacityFromConfig,
-  markExpectedCapacityConflicts,
-} from "@/domain/schedule-capacity";
-import { detectUnmetPreferredOffConflicts } from "@/domain/preferred-off-validator";
-import { detectInsufficientSundayOffConflicts } from "@/domain/sunday-off-validator";
+import { collectScheduleConflicts } from "@/domain/collect-schedule-conflicts";
 import type { ScheduleConflict, ScheduleAssignmentData } from "@/domain/types";
 import { ensureStoreConfig } from "./store.service";
 import { listActiveEmployees } from "./employee.service";
 import { listActiveShifts } from "./shift.service";
-import { getDayOfWeek, getMonthDates, parseJsonArray } from "@/lib/utils";
+import { parseJsonArray } from "@/lib/utils";
 
 export interface ScheduleView {
   id: string;
@@ -120,7 +114,7 @@ export async function revalidateSchedule(month: number, year: number): Promise<S
   const employees = await listActiveEmployees();
   const shifts = await listActiveShifts();
 
-  const conflicts = validateSchedule({
+  const conflicts = collectScheduleConflicts({
     config,
     employees,
     shifts,
@@ -128,32 +122,6 @@ export async function revalidateSchedule(month: number, year: number): Promise<S
     month,
     year,
   });
-
-  const operatingDates = getMonthDates(year, month).filter((date) =>
-    config.operatingDays.includes(getDayOfWeek(date))
-  );
-
-  conflicts.push(
-    ...detectUnmetPreferredOffConflicts(
-      employees,
-      schedule.assignments,
-      operatingDates,
-      config,
-      shifts.length
-    )
-  );
-
-  conflicts.push(
-    ...detectInsufficientSundayOffConflicts(
-      employees,
-      schedule.assignments,
-      operatingDates,
-      config
-    )
-  );
-
-  const capacity = buildScheduleCapacityFromConfig(config, employees, shifts.length);
-  markExpectedCapacityConflicts(conflicts, capacity);
 
   await prisma.schedule.update({
     where: { month_year: { month, year } },

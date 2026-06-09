@@ -17,7 +17,9 @@ export function Navbar({ currentPath }: { currentPath?: string }) {
           <Link href="/" className="text-xl font-bold text-slate-900">
             Escala Fácil
           </Link>
-          <p className="text-sm text-slate-500">Gestão de escala de funcionários</p>
+          <p className="text-sm text-slate-500">
+            Escala para pequeno varejo — sem planilha, com alertas trabalhistas
+          </p>
         </div>
         <nav className="flex flex-wrap gap-2">
           {links.map((link) => (

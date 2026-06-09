@@ -14,7 +14,7 @@ export default async function FuncionariosPage() {
       <Navbar currentPath="/funcionarios" />
       <PageContainer
         title="Funcionários"
-        description="Cadastre e gerencie os funcionários da loja"
+        description="Cadastre quem trabalha na loja, com folgas preferidas e disponibilidade"
       >
         <div className="grid gap-8 lg:grid-cols-3">
           <Card className="lg:col-span-1">
@@ -38,8 +38,11 @@ export default async function FuncionariosPage() {
                           {employee.active ? "Ativo" : "Inativo"}
                         </Badge>
                       </div>
+                      {employee.role && (
+                        <p className="mt-1 text-sm text-slate-600">{employee.role}</p>
+                      )}
                       {employee.notes && (
-                        <p className="mt-1 text-sm text-slate-600">{employee.notes}</p>
+                        <p className="mt-1 text-sm text-slate-500">{employee.notes}</p>
                       )}
                       <div className="mt-2 space-y-1 text-sm text-slate-500">
                         <p>
