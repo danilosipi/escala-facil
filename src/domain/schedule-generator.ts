@@ -18,7 +18,9 @@ import {
   markExpectedCapacityConflicts,
 } from "./schedule-capacity";
 import { detectUnmetPreferredOffConflicts } from "./preferred-off-validator";
+import { detectInsufficientSundayOffConflicts } from "./sunday-off-validator";
 import { optimizePreferredOffPlans } from "./preferred-off-optimizer";
+import { optimizeSundayOffPlans } from "./sunday-off-optimizer";
 
 function sortShifts(shifts: ShiftData[]): ShiftData[] {
   return [...shifts].sort((a, b) => a.startTime.localeCompare(b.startTime));
@@ -390,6 +392,53 @@ function applyPreferredOffOptimization(
   return result;
 }
 
+function applySundayOffOptimization(
+  plans: Map<string, Map<string, boolean>>,
+  assignments: ScheduleAssignmentData[],
+  operatingDates: string[],
+  employees: EmployeeData[],
+  shifts: ShiftData[],
+  config: StoreConfigData
+): ScheduleAssignmentData[] {
+  let result = assignments;
+  const allChangedDates = new Set<string>();
+
+  for (let pass = 0; pass < 2; pass++) {
+    const changedDates = optimizeSundayOffPlans(
+      plans,
+      employees,
+      operatingDates,
+      config,
+      shifts.length
+    );
+
+    if (changedDates.size === 0) {
+      break;
+    }
+
+    for (const date of changedDates) {
+      allChangedDates.add(date);
+    }
+
+    result = rebuildDatesAssignments(
+      result,
+      [...changedDates],
+      employees,
+      plans,
+      shifts,
+      config
+    );
+
+    const cycles = getFixedCycleWindows(operatingDates, config.cycleLengthDays);
+    for (const cycleDates of cycles) {
+      if (!cycleDates.some((date) => changedDates.has(date))) continue;
+      result = repairCycleCoverage(plans, result, cycleDates, employees, shifts, config);
+    }
+  }
+
+  return result;
+}
+
 export function generateSchedule(
   config: StoreConfigData,
   employees: EmployeeData[],
@@ -428,6 +477,15 @@ export function generateSchedule(
     config
   );
 
+  assignments = applySundayOffOptimization(
+    workOffPlans,
+    assignments,
+    operatingDates,
+    activeEmployees,
+    activeShifts,
+    config
+  );
+
   const conflicts = validateSchedule({
     config,
     employees: activeEmployees,
@@ -444,6 +502,15 @@ export function generateSchedule(
       operatingDates,
       config,
       activeShifts.length
+    )
+  );
+
+  conflicts.push(
+    ...detectInsufficientSundayOffConflicts(
+      activeEmployees,
+      assignments,
+      operatingDates,
+      config
     )
   );
 

@@ -23,6 +23,7 @@ export async function upsertStoreConfig(
     cycleLengthDays: data.cycleLengthDays,
     consecutiveOffDaysRequired: data.consecutiveOffDaysRequired,
     minEmployeesPerShift: data.minEmployeesPerShift,
+    minSundayOffsPerMonth: data.minSundayOffsPerMonth,
   };
 
   const config = existing
@@ -46,5 +47,6 @@ export async function ensureStoreConfig(): Promise<StoreConfigData> {
     cycleLengthDays: 7,
     consecutiveOffDaysRequired: false,
     minEmployeesPerShift: 1,
+    minSundayOffsPerMonth: 2,
   });
 }

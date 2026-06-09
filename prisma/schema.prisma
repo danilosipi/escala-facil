@@ -19,6 +19,7 @@ model StoreConfig {
   cycleLengthDays            Int      @default(7)
   consecutiveOffDaysRequired Boolean  @default(false)
   minEmployeesPerShift       Int      @default(1)
+  minSundayOffsPerMonth      Int      @default(2)
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
 }

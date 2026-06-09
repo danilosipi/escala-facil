@@ -24,7 +24,7 @@ function debugLog(enabled: boolean, message: string, data?: Record<string, unkno
   }
 }
 
-function isWorkingInPlan(
+export function isWorkingInPlan(
   plans: Map<string, Map<string, boolean>>,
   employeeId: string,
   date: string
@@ -32,7 +32,7 @@ function isWorkingInPlan(
   return plans.get(employeeId)?.get(date) === true;
 }
 
-function isOffInPlan(
+export function isOffInPlan(
   plans: Map<string, Map<string, boolean>>,
   employeeId: string,
   date: string
@@ -56,7 +56,7 @@ type SwapRejectionReason =
   | "cobertura_insuficiente_no_ciclo"
   | "dia_preferencial_de_folga";
 
-function tryCrossEmployeePreferredOffSwap(
+export function tryCrossEmployeeWorkOffSwap(
   plans: Map<string, Map<string, boolean>>,
   preferringEmployee: EmployeeData,
   coverEmployee: EmployeeData,
@@ -65,7 +65,8 @@ function tryCrossEmployeePreferredOffSwap(
   cycleDates: string[],
   employees: EmployeeData[],
   config: StoreConfigData,
-  minWorkersPerDay: number
+  minWorkersPerDay: number,
+  skipPreferredOffChecks = false
 ): { applied: boolean; reason?: SwapRejectionReason } {
   const preferringPlan = plans.get(preferringEmployee.id);
   const coverPlan = plans.get(coverEmployee.id);
@@ -90,8 +91,9 @@ function tryCrossEmployeePreferredOffSwap(
   }
 
   if (
-    isPreferredOffDate(preferringEmployee, compensationDate) ||
-    isPreferredOffDate(coverEmployee, preferredDate)
+    !skipPreferredOffChecks &&
+    (isPreferredOffDate(preferringEmployee, compensationDate) ||
+      isPreferredOffDate(coverEmployee, preferredDate))
   ) {
     return { applied: false, reason: "dia_preferencial_de_folga" };
   }
@@ -281,7 +283,7 @@ export function optimizePreferredOffPlans(
             );
 
             for (const compensationDate of compensationDates) {
-              const result = tryCrossEmployeePreferredOffSwap(
+              const result = tryCrossEmployeeWorkOffSwap(
                 plans,
                 employee,
                 coverEmployee,

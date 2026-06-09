@@ -107,6 +107,22 @@ export function StoreConfigForm({
       </div>
 
       <div>
+        <Label htmlFor="minSundayOffsPerMonth">Mínimo de domingos de folga por mês</Label>
+        <Input
+          id="minSundayOffsPerMonth"
+          name="minSundayOffsPerMonth"
+          type="number"
+          min={0}
+          max={5}
+          defaultValue={config.minSundayOffsPerMonth}
+          required
+        />
+        <p className="mt-1 text-xs text-slate-500">
+          Aplica-se a funcionários que podem trabalhar fim de semana.
+        </p>
+      </div>
+
+      <div>
         <Label htmlFor="cycleLengthDays">Tamanho do ciclo (dias)</Label>
         <Input
           id="cycleLengthDays"

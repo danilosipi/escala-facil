@@ -76,6 +76,7 @@ function buildMockConfig(): StoreConfigData {
     cycleLengthDays: 7,
     consecutiveOffDaysRequired: false,
     minEmployeesPerShift: 1,
+    minSundayOffsPerMonth: 2,
   };
 }
 

@@ -6,6 +6,7 @@ import {
   markExpectedCapacityConflicts,
 } from "@/domain/schedule-capacity";
 import { detectUnmetPreferredOffConflicts } from "@/domain/preferred-off-validator";
+import { detectInsufficientSundayOffConflicts } from "@/domain/sunday-off-validator";
 import type { ScheduleConflict, ScheduleAssignmentData } from "@/domain/types";
 import { ensureStoreConfig } from "./store.service";
 import { listActiveEmployees } from "./employee.service";
@@ -139,6 +140,15 @@ export async function revalidateSchedule(month: number, year: number): Promise<S
       operatingDates,
       config,
       shifts.length
+    )
+  );
+
+  conflicts.push(
+    ...detectInsufficientSundayOffConflicts(
+      employees,
+      schedule.assignments,
+      operatingDates,
+      config
     )
   );
 

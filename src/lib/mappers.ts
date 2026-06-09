@@ -15,6 +15,7 @@ export function mapStoreConfig(config: StoreConfig): StoreConfigData {
     cycleLengthDays: config.cycleLengthDays,
     consecutiveOffDaysRequired: config.consecutiveOffDaysRequired,
     minEmployeesPerShift: config.minEmployeesPerShift,
+    minSundayOffsPerMonth: config.minSundayOffsPerMonth ?? 2,
   };
 }
 

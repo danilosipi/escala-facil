@@ -12,6 +12,7 @@ const conflictLabels: Record<ScheduleConflict["type"], string> = {
   EMPLOYEE_DOUBLE_SHIFT: "Dois turnos no mesmo dia",
   EMPLOYEE_WITHOUT_SCHEDULE: "Sem escala",
   PREFERRED_OFF_NOT_HONORED: "Preferência de folga não atendida",
+  INSUFFICIENT_SUNDAY_OFFS: "Domingos de folga insuficientes",
 };
 
 export function ConflictsList({
@@ -21,10 +22,15 @@ export function ConflictsList({
   conflicts: ScheduleConflict[];
   diagnosis?: ScheduleCapacityDiagnosis;
 }) {
-  const warnings = conflicts.filter((c) => c.type === "PREFERRED_OFF_NOT_HONORED");
+  const warnings = conflicts.filter(
+    (c) => c.type === "PREFERRED_OFF_NOT_HONORED" || c.type === "INSUFFICIENT_SUNDAY_OFFS"
+  );
   const expected = conflicts.filter((c) => c.expected);
   const unexpected = conflicts.filter(
-    (c) => !c.expected && c.type !== "PREFERRED_OFF_NOT_HONORED"
+    (c) =>
+      !c.expected &&
+      c.type !== "PREFERRED_OFF_NOT_HONORED" &&
+      c.type !== "INSUFFICIENT_SUNDAY_OFFS"
   );
 
   if (conflicts.length === 0) {
@@ -110,7 +116,11 @@ function ConflictItem({
 
 export function hasDateConflict(conflicts: ScheduleConflict[], date: string): boolean {
   return conflicts.some(
-    (c) => c.date === date && !c.expected && c.type !== "PREFERRED_OFF_NOT_HONORED"
+    (c) =>
+      c.date === date &&
+      !c.expected &&
+      c.type !== "PREFERRED_OFF_NOT_HONORED" &&
+      c.type !== "INSUFFICIENT_SUNDAY_OFFS"
   );
 }
 
@@ -123,6 +133,7 @@ export function hasEmployeeConflict(
     (c) =>
       !c.expected &&
       c.type !== "PREFERRED_OFF_NOT_HONORED" &&
+      c.type !== "INSUFFICIENT_SUNDAY_OFFS" &&
       c.employeeId === employeeId &&
       (date === undefined || c.date === date || c.date === undefined)
   );

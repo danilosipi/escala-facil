@@ -35,6 +35,7 @@ async function main() {
       cycleLengthDays: 7,
       consecutiveOffDaysRequired: false,
       minEmployeesPerShift: 1,
+      minSundayOffsPerMonth: 2,
     },
   });
 

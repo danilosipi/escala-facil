@@ -21,6 +21,7 @@ export async function saveStoreConfigAction(formData: FormData) {
     cycleLengthDays: Number(formData.get("cycleLengthDays") ?? 7),
     consecutiveOffDaysRequired: formData.get("consecutiveOffDaysRequired") === "on",
     minEmployeesPerShift: Number(formData.get("minEmployeesPerShift") ?? 1),
+    minSundayOffsPerMonth: Number(formData.get("minSundayOffsPerMonth") ?? 2),
   });
 
   revalidatePath("/configuracoes");

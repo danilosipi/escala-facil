@@ -12,6 +12,7 @@ export interface StoreConfigData {
   cycleLengthDays: number;
   consecutiveOffDaysRequired: boolean;
   minEmployeesPerShift: number;
+  minSundayOffsPerMonth: number;
 }
 
 export interface EmployeeData {
@@ -51,7 +52,8 @@ export type ConflictType =
   | "EMPLOYEE_UNAVAILABLE_DAY"
   | "EMPLOYEE_DOUBLE_SHIFT"
   | "EMPLOYEE_WITHOUT_SCHEDULE"
-  | "PREFERRED_OFF_NOT_HONORED";
+  | "PREFERRED_OFF_NOT_HONORED"
+  | "INSUFFICIENT_SUNDAY_OFFS";
 
 export interface ScheduleConflict {
   type: ConflictType;

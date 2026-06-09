@@ -49,7 +49,7 @@ export function getPartialCycleDates(
   return operatingDates.slice(completeCount);
 }
 
-function trySwapWorkOffInCyclePlan(
+export function trySwapWorkOffInCyclePlan(
   plans: Map<string, Map<string, boolean>>,
   employee: EmployeeData,
   workDate: string,

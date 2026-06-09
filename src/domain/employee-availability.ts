@@ -113,11 +113,19 @@ function scoreOffCandidate(
   baseOffDates: Set<string>,
   cycleIndex: number,
   surplus: number,
-  isPreferred: boolean
+  isPreferred: boolean,
+  config: StoreConfigData
 ): number {
   let score = surplus * 10;
   if (isPreferred) score += 1000;
   if (baseOffDates.has(date)) score += 25;
+  if (
+    config.minSundayOffsPerMonth > 0 &&
+    employee.canWorkWeekend &&
+    getDayOfWeek(date) === 0
+  ) {
+    score += 500;
+  }
   score -= cycleIndex;
   return score;
 }
@@ -215,7 +223,7 @@ function fillEmployeeRemainingCycleDays(
   const scoreOffDate = (date: string) => {
     const surplus = countEligibleAvailableOnDate(plans, date, employees, config, employee.id);
     const preferred = isPreferredOffDate(employee, date);
-    return scoreOffCandidate(employee, date, baseOffDates, cycleIndex, surplus, preferred);
+    return scoreOffCandidate(employee, date, baseOffDates, cycleIndex, surplus, preferred, config);
   };
 
   let { work: workCount, off: offCount } = getCycleCounts(plan, cycleDates);
