@@ -38,7 +38,7 @@ export function isCriticalCoverageDate(
   minWorkersPerDay: number
 ): boolean {
   const eligible = getEligibleEmployeesForDate(employees, date, config);
-  return eligible.length > 0 && eligible.length <= minWorkersPerDay;
+  return eligible.length > 0 && eligible.length < minWorkersPerDay;
 }
 
 export function isEmployeeRequiredOnDate(
@@ -144,9 +144,7 @@ function canEmployeeTakeOffOnDate(
   if (offCount >= config.offDaysPerCycle) return false;
   if (plan.get(date) === true) return false;
 
-  if (
-    countWorkingOnDateIfEmployeeSet(plans, date, employeeId, false) < minWorkersPerDay
-  ) {
+  if (countWorkingOnDateIfEmployeeSet(plans, date, employeeId, false) === 0) {
     return false;
   }
 
@@ -187,7 +185,7 @@ function buildMandatoryAssignments(
       }
     }
 
-    if (eligible.length > 0 && eligible.length <= minWorkersPerDay) {
+    if (eligible.length > 0 && eligible.length < minWorkersPerDay) {
       for (const employee of eligible) {
         if (!mandatoryWork.has(employee.id)) mandatoryWork.set(employee.id, new Set());
         mandatoryWork.get(employee.id)!.add(date);
@@ -320,9 +318,7 @@ function fillEmployeeRemainingCycleDays(
 
     for (const { date } of trimCandidates) {
       if (workCount <= config.workDaysPerCycle) break;
-      if (
-        countWorkingOnDateIfEmployeeSet(plans, date, employee.id, false) < minWorkersPerDay
-      ) {
+      if (countWorkingOnDateIfEmployeeSet(plans, date, employee.id, false) === 0) {
         continue;
       }
       plan.set(date, false);

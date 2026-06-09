@@ -1,4 +1,4 @@
-import type { EmployeeData, StoreConfigData } from "./types";
+import type { EmployeeData, ScheduleAssignmentData, ShiftData, StoreConfigData } from "./types";
 import { getDayOfWeek, DAY_NAMES_FULL } from "@/lib/utils";
 import {
   countWorkingOnDate,
@@ -6,8 +6,10 @@ import {
   getFixedCycleWindows,
   isEmployeeRequiredOnDate,
   isForcedOffDay,
+  trySwapWorkOffInCyclePlan,
 } from "./cycle-patterns";
 import { isPreferredOffDate } from "./employee-availability";
+import { optimizeSundayOffPlans } from "./sunday-off-optimizer";
 
 const LOG_PREFIX = "[preferencia-remanejamento]";
 
@@ -336,4 +338,265 @@ export function optimizePreferredOffPlans(
   }
 
   return changedDates;
+}
+
+function getSingleEmployeeCompensationDates(
+  cycleDates: string[],
+  preferredDate: string,
+  employee: EmployeeData,
+  plans: Map<string, Map<string, boolean>>,
+  config: StoreConfigData
+): string[] {
+  return cycleDates
+    .filter((date) => {
+      if (date === preferredDate) return false;
+      if (isForcedOffDay(employee, date, config)) return false;
+      if (isPreferredOffDate(employee, date)) return false;
+      return isOffInPlan(plans, employee.id, date);
+    })
+    .sort((a, b) => a.localeCompare(b));
+}
+
+/** Troca folga/trabalho do mesmo funcionário no ciclo quando há folga sobrando no dia preferido. */
+export function optimizeSingleEmployeePreferredOffPlans(
+  plans: Map<string, Map<string, boolean>>,
+  employees: EmployeeData[],
+  operatingDates: string[],
+  config: StoreConfigData,
+  activeShiftCount: number
+): Set<string> {
+  const changedDates = new Set<string>();
+  const minWorkersPerDay = config.minEmployeesPerShift * activeShiftCount;
+  const cycles = getFixedCycleWindows(operatingDates, config.cycleLengthDays);
+
+  for (const cycleDates of cycles) {
+    let cycleChanged = true;
+
+    while (cycleChanged) {
+      cycleChanged = false;
+
+      for (const employee of employees) {
+        if (employee.preferredOffDays.length === 0) continue;
+
+        const unmetDates = getUnmetPreferredOffDatesInCycle(
+          employee,
+          cycleDates,
+          plans,
+          config
+        );
+
+        for (const preferredDate of unmetDates) {
+          if (countWorkingOnDate(plans, preferredDate) <= minWorkersPerDay) continue;
+
+          const compensationDates = getSingleEmployeeCompensationDates(
+            cycleDates,
+            preferredDate,
+            employee,
+            plans,
+            config
+          );
+
+          for (const compensationDate of compensationDates) {
+            if (
+              !trySwapWorkOffInCyclePlan(
+                plans,
+                employee,
+                preferredDate,
+                compensationDate,
+                cycleDates,
+                employees,
+                config,
+                minWorkersPerDay
+              )
+            ) {
+              continue;
+            }
+
+            if (countWorkingOnDate(plans, preferredDate) < minWorkersPerDay) {
+              const employeePlan = plans.get(employee.id)!;
+              employeePlan.set(preferredDate, true);
+              employeePlan.set(compensationDate, false);
+              continue;
+            }
+
+            changedDates.add(preferredDate);
+            changedDates.add(compensationDate);
+            cycleChanged = true;
+            break;
+          }
+
+          if (cycleChanged) break;
+        }
+
+        if (cycleChanged) break;
+      }
+    }
+  }
+
+  return changedDates;
+}
+
+/** Verifica se ainda existe troca viável para atender a preferência no ciclo. */
+export function canResolvePreferredOffWithSwap(
+  plans: Map<string, Map<string, boolean>>,
+  employee: EmployeeData,
+  preferredDate: string,
+  cycleDates: string[],
+  employees: EmployeeData[],
+  config: StoreConfigData,
+  activeShiftCount: number
+): boolean {
+  const minWorkersPerDay = config.minEmployeesPerShift * activeShiftCount;
+  const plan = plans.get(employee.id);
+  if (!plan || plan.get(preferredDate) !== true) return false;
+
+  if (countWorkingOnDate(plans, preferredDate) > minWorkersPerDay) {
+    for (const compensationDate of getSingleEmployeeCompensationDates(
+      cycleDates,
+      preferredDate,
+      employee,
+      plans,
+      config
+    )) {
+      const snapshot = new Map(
+        [...plans.entries()].map(([id, dateMap]) => [id, new Map(dateMap)])
+      );
+
+      if (
+        trySwapWorkOffInCyclePlan(
+          snapshot,
+          employee,
+          preferredDate,
+          compensationDate,
+          cycleDates,
+          employees,
+          config,
+          minWorkersPerDay
+        ) &&
+        countWorkingOnDate(snapshot, preferredDate) >= minWorkersPerDay
+      ) {
+        return true;
+      }
+    }
+  }
+
+  const coverCandidates = getCoverCandidates(
+    employees,
+    employee.id,
+    preferredDate,
+    plans,
+    config
+  );
+
+  for (const coverEmployee of coverCandidates) {
+    for (const compensationDate of getCompensationDates(
+      cycleDates,
+      preferredDate,
+      employee,
+      coverEmployee,
+      plans,
+      config
+    )) {
+      const snapshot = new Map(
+        [...plans.entries()].map(([id, dateMap]) => [id, new Map(dateMap)])
+      );
+
+      if (
+        tryCrossEmployeeWorkOffSwap(
+          snapshot,
+          employee,
+          coverEmployee,
+          preferredDate,
+          compensationDate,
+          cycleDates,
+          employees,
+          config,
+          minWorkersPerDay
+        ).applied
+      ) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+export interface LocalSwapOptimizerInput {
+  plans: Map<string, Map<string, boolean>>;
+  assignments: ScheduleAssignmentData[];
+  operatingDates: string[];
+  employees: EmployeeData[];
+  shifts: ShiftData[];
+  config: StoreConfigData;
+  repairCoverage: (assignments: ScheduleAssignmentData[]) => ScheduleAssignmentData[];
+  rebuildDates: (
+    assignments: ScheduleAssignmentData[],
+    changedDates: string[]
+  ) => ScheduleAssignmentData[];
+}
+
+function applyPlanChanges(
+  input: LocalSwapOptimizerInput,
+  currentAssignments: ScheduleAssignmentData[],
+  changedDates: Set<string>
+): ScheduleAssignmentData[] {
+  if (changedDates.size === 0) return currentAssignments;
+
+  let result = input.rebuildDates(currentAssignments, [...changedDates]);
+  result = input.repairCoverage(result);
+  return result;
+}
+
+/**
+ * Etapa 7 do pipeline: otimizador de trocas locais em múltiplas passadas.
+ * - troca folga/trabalho no mesmo ciclo (mesmo funcionário e entre funcionários)
+ * - preserva 5x2, cobertura, indisponibilidades e restrição de fim de semana
+ * - tenta atender preferências e domingos de folga antes de gerar avisos
+ */
+export function runLocalSwapOptimizer(input: LocalSwapOptimizerInput): ScheduleAssignmentData[] {
+  const activeShiftCount = input.shifts.length;
+  let result = input.assignments;
+
+  const optimizers = [
+    () => optimizeSingleEmployeePreferredOffPlans(
+      input.plans,
+      input.employees,
+      input.operatingDates,
+      input.config,
+      activeShiftCount
+    ),
+    () => optimizePreferredOffPlans(
+      input.plans,
+      input.employees,
+      input.operatingDates,
+      input.config,
+      activeShiftCount
+    ),
+    () => optimizeSundayOffPlans(
+      input.plans,
+      input.employees,
+      input.operatingDates,
+      input.config,
+      activeShiftCount
+    ),
+  ];
+
+  const maxRounds = Math.max(3, input.employees.length * 3);
+
+  for (let round = 0; round < maxRounds; round++) {
+    let roundChanged = false;
+
+    for (const optimize of optimizers) {
+      const changedDates = optimize();
+      if (changedDates.size === 0) continue;
+
+      result = applyPlanChanges(input, result, changedDates);
+      roundChanged = true;
+    }
+
+    if (!roundChanged) break;
+  }
+
+  return result;
 }

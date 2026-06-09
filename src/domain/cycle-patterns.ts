@@ -230,7 +230,7 @@ function applyPartialCycleWithAvailability(
 
       if (
         isPreferredOffDate(employee, date) &&
-        countWorkingOnDateIfEmployeeSet(plans, date, employee.id, false) >= minWorkersPerDay
+        countWorkingOnDateIfEmployeeSet(plans, date, employee.id, false) > 0
       ) {
         plan.set(date, false);
       }

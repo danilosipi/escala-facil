@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
-    "test": "tsx --test src/domain/labor-rules/labor-rules-validator.test.ts src/domain/preferred-off.test.ts src/domain/sunday-off.test.ts src/domain/schedule-weekend.test.ts",
+    "test": "tsx --test src/domain/labor-rules/labor-rules-validator.test.ts src/domain/preferred-off.test.ts src/domain/sunday-off.test.ts src/domain/schedule-weekend.test.ts src/domain/schedule-pipeline.test.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

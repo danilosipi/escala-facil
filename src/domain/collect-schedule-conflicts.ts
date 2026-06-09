@@ -24,8 +24,9 @@ export function collectScheduleConflicts(input: {
   assignments: ScheduleAssignmentData[];
   month: number;
   year: number;
+  plans?: Map<string, Map<string, boolean>>;
 }): ScheduleConflict[] {
-  const { config, employees, shifts, assignments, month, year } = input;
+  const { config, employees, shifts, assignments, month, year, plans } = input;
   const operatingDates = getMonthDates(year, month).filter((date) =>
     config.operatingDays.includes(getDayOfWeek(date))
   );
@@ -45,7 +46,8 @@ export function collectScheduleConflicts(input: {
       assignments,
       operatingDates,
       config,
-      shifts.length
+      shifts.length,
+      plans
     )
   );
 

@@ -19,7 +19,8 @@ export function detectUnmetPreferredOffConflicts(
   assignments: Array<{ employeeId: string; date: string; isOff: boolean; shiftId: string | null }>,
   operatingDates: string[],
   config: StoreConfigData,
-  _activeShiftCount: number
+  _activeShiftCount: number,
+  _plans?: Map<string, Map<string, boolean>>
 ): ScheduleConflict[] {
   const conflicts: ScheduleConflict[] = [];
   const cycles = getFixedCycleWindows(operatingDates, config.cycleLengthDays);
